@@ -4,4 +4,5 @@ natsort
 nibabel
 numpy
 pandas
+porespy
 scikit-learn
