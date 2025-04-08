@@ -133,7 +133,7 @@ def start_docker():
         print(f"Failed to start Docker: {e}")
         sys.exit(1)
 
-def fractal_analysis(volume_path):
+def fractal_analysis(volume_path, verbose=True):
     ### NIFTI IMAGE LOADING ###
     image_path = volume_path
     img = nib.load(image_path)
@@ -142,11 +142,11 @@ def fractal_analysis(volume_path):
     imageloaded.shape
     ### CHECK THE IMAGE ISOTROPY ###
     voxels_size = nii_header['pixdim'][1:4]
-    print(f'The voxel size is {voxels_size[0]} x {voxels_size[1]} x {voxels_size[2]} mm^3')
     ### COMPUTING THE MINIMUM AND MAXIMUM SIZES OF THE IMAGE ###
     L_min = voxels_size[0]
-    print(f'Shape of the image : {imageloaded.shape}')
-    print(f'The minimum size of the image is {L_min} mm')
+    if verbose : print(f'The voxel size is {voxels_size[0]} x {voxels_size[1]} x {voxels_size[2]} mm^3')
+    if verbose : print(f'Shape of the image : {imageloaded.shape}')
+    if verbose : print(f'The minimum size of the image is {L_min} mm')
     Ly=imageloaded.shape[0]
     Lx=imageloaded.shape[1]
     Lz=imageloaded.shape[2]
@@ -156,7 +156,7 @@ def fractal_analysis(volume_path):
         L_Max = Ly
     if Lz > L_Max:
         L_Max = Lz
-    print(f'The maximum size of the image is {L_Max} mm')
+    if verbose : print(f'The maximum size of the image is {L_Max} mm')
     ### NON-ZERO VOXELS OF THE IMAGE: NUMBER AND Y, X, Z COORDINATES ###
     voxels=[]
     for i in range(Ly):
@@ -165,7 +165,7 @@ def fractal_analysis(volume_path):
                 if imageloaded[i,j,k]>0:
                     voxels.append((i,j,k))
     voxels=np.asarray(voxels)
-    print(f'The non-zero voxels in the image are (the image volume) {voxels.shape[0]} / {math.prod(imageloaded.shape)}')
+    if verbose : print(f'The non-zero voxels in the image are (the image volume) {voxels.shape[0]} / {math.prod(imageloaded.shape)}')
     ### LOGARITHM SCALES VECTOR AND COUNTS VECTOR CREATION ###
     Ns = []
     scales = []
@@ -176,7 +176,7 @@ def fractal_analysis(volume_path):
     random.seed(1)
     ### THE 3D BOX-COUNTING ALGORITHM WITH 20 PSEUDO-RANDOM OFFSETS ###
     for scale in scales:
-        print(f'Computing scale {scale}...')
+        if verbose : print(f'Computing scale {scale}...')
         Ns_offset=[] 
         for i in range(20): 
             y0_rand = -random.randint(0,scale)
@@ -208,7 +208,7 @@ def fractal_analysis(volume_path):
         y_pred = np.polyval(coeffs,np.log2(scales)[scales_indices[k,0]:scales_indices[k,1] + 1])
         R2=skl.r2_score(y_true,y_pred)
         R2_adj_tmp = 1 - (1 - R2)*((n - 1)/(n - (k_ind + 1)))
-        print(f'In the interval [{scales[scales_indices[k,0]]}, {scales[scales_indices[k,1]]}] voxels, the FD is {-coeffs[0]} and the determination coefficient adjusted for the number of points is {R2_adj_tmp}')
+        if verbose : print(f'In the interval [{scales[scales_indices[k,0]]}, {scales[scales_indices[k,1]]}] voxels, the FD is {-coeffs[0]} and the determination coefficient adjusted for the number of points is {R2_adj_tmp}')
         R2_adj = round(R2_adj, 3)
         R2_adj_tmp = round(R2_adj_tmp, 3)
         if R2_adj_tmp > R2_adj:
@@ -225,3 +225,5 @@ def fractal_analysis(volume_path):
     # print("mfs automatically selected:", mfs)
     # print("Mfs automatically selected:", Mfs)
     print("FD automatically selected:", FD)
+
+    return FD
