@@ -201,6 +201,9 @@ def fractal_analysis(volume_path, verbose=True):
 
     k_ind = 1 # number of indipendent variables in the regression model
     R2_adj = -1
+
+    fd_results = []
+
     for k in range(scales_indices.shape[0]):
         coeffs=np.polyfit(np.log2(scales)[scales_indices[k,0]:scales_indices[k,1] + 1], np.log2(Ns)[scales_indices[k,0]:scales_indices[k,1] + 1], 1)
         n = scales_indices[k,1] - scales_indices[k,0] + 1 
@@ -209,6 +212,14 @@ def fractal_analysis(volume_path, verbose=True):
         R2=skl.r2_score(y_true,y_pred)
         R2_adj_tmp = 1 - (1 - R2)*((n - 1)/(n - (k_ind + 1)))
         if verbose : print(f'In the interval [{scales[scales_indices[k,0]]}, {scales[scales_indices[k,1]]}] voxels, the FD is {-coeffs[0]} and the determination coefficient adjusted for the number of points is {R2_adj_tmp}')
+        
+        fd_results.append({
+            "FD": round(-coeffs[0], 4), 
+            "R2_adj": round(R2_adj_tmp, 3),  
+            "scale_min": scales[scales_indices[k,0]] * L_min,  
+            "scale_max": scales[scales_indices[k,1]] * L_min,  
+        })
+        
         R2_adj = round(R2_adj, 3)
         R2_adj_tmp = round(R2_adj_tmp, 3)
         if R2_adj_tmp > R2_adj:
@@ -226,4 +237,4 @@ def fractal_analysis(volume_path, verbose=True):
     # print("Mfs automatically selected:", Mfs)
     print("FD automatically selected:", FD)
 
-    return FD
+    return FD, (mfs, Mfs), fd_results
