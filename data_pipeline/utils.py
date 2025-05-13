@@ -10,6 +10,7 @@ import platform
 import numpy as np
 import random, math
 import sklearn.metrics as skl
+from pathlib import Path
 
 def visualize_nifti_depth(file_path, slices=3, save=False):
     """
@@ -238,3 +239,17 @@ def fractal_analysis(volume_path, verbose=True):
     print("FD automatically selected:", FD)
 
     return FD, (mfs, Mfs), fd_results
+
+# convert Windows to Docker-style POSIX mount
+def win2posix(wp):
+    p     = Path(wp).resolve()
+    drive = p.drive.rstrip(':').lower()
+    tail  = p.as_posix()[len(p.drive):]
+    return f"/{drive}{tail}"
+
+# convert Docker-style POSIX mount to Windows Path object
+def posix2win(pp: str) -> Path:
+    comps = pp.lstrip("/").split("/")
+    drive = comps[0].upper() + ":" + "\\"
+    rest = comps[1:]
+    return Path(drive, *rest)
