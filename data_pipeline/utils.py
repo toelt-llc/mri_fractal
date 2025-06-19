@@ -253,3 +253,7 @@ def posix2win(pp: str) -> Path:
     drive = comps[0].upper() + ":" + "\\"
     rest = comps[1:]
     return Path(drive, *rest)
+
+def cohen_d_paired(x, y):
+    diff = x - y
+    return diff.mean() / diff.std(ddof=1)
