@@ -257,3 +257,54 @@ def posix2win(pp: str) -> Path:
 def cohen_d_paired(x, y):
     diff = x - y
     return diff.mean() / diff.std(ddof=1)
+
+
+def barplot_annotate_brackets(num1, num2, data, center, height, yerr=None,
+                              dh=.05, barh=.05, fs=None, maxasterix=None, ax=None):
+    """
+    Annotate barplot with p-values.
+    See function docstring in previous version for parameter details.
+    """
+
+    # Determine annotation text
+    if isinstance(data, str):
+        text = data
+    else:
+        text = ''
+        p = .05
+        while data < p:
+            text += '*'
+            p /= 10.
+            if maxasterix and len(text) == maxasterix:
+                break
+        if not text:
+            text = 'n. s.'
+
+    lx, ly = center[num1], height[num1]
+    rx, ry = center[num2], height[num2]
+
+    if yerr:
+        ly += yerr[num1]
+        ry += yerr[num2]
+
+    # Use current axis if none provided
+    if ax is None:
+        ax = plt.gca()
+
+    ax_y0, ax_y1 = ax.get_ylim()
+    dh *= (ax_y1 - ax_y0)
+    barh *= (ax_y1 - ax_y0)
+    th = 0.02 * (ax_y1 - ax_y0)
+    y = max(ly, ry) + dh
+
+    barx = [lx, lx, rx, rx]
+    bary = [y, y + barh, y + barh, y]
+    mid = ((lx + rx) / 2, y + barh + th)
+
+    ax.plot(barx, bary, c='black')
+
+    kwargs = dict(ha='center', va='bottom')
+    if fs is not None:
+        kwargs['fontsize'] = fs
+
+    ax.text(*mid, text, **kwargs)
