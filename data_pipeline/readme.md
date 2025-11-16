@@ -43,10 +43,50 @@ Processing steps include registration, (skull stripping), resizing, segmentation
      - **Fractal Dimension Calculation**: Calculate the fractal dimension for the whole brain and specific regions.
      - **Exploratory Data Analysis (EDA)**: Check the fractal dimension results.
 
-6. **[4-fractal_comparison.ipynb](./4-fractal_comparison.ipynb)**
+6. **[3d-pipeline_BOB_samseg.ipynb](./3d-pipeline_BOB_samseg.ipynb)**
+   - same structure as 3b-pipeline_BOB_freesurfer-seg.ipynb, but for the SAMSEG segmentation.
+
+7. **[4-fractal_comparison.ipynb](./4-fractal_comparison.ipynb)**
    - Compares the fractal dimension results between different preprocessing steps and segmentation methods.
    - **Key Steps**:
      - **Comparison**: Compare the fractal dimension results between different preprocessing steps and segmentation methods.
+
+8. **[5-Basel_MRI_dataset.ipynb](./5-Basel_MRI_dataset.ipynb)**
+   - exploratory tests for the Basel MRI dataset
+
+9. **[5b_Basel_MRI_pipeline.ipynb](./5b_Basel_MRI_pipeline.ipynb)**
+   - full working pipeline to:
+      - resample MRIs
+      - segment brain MRIs using SynthSeg
+      - calculate volume and fractal dimension
+      - data analysis (incl. growth curves)
+
+10. **[6-segmentation_comparison.ipynb](./6-segmentation_comparison.ipynb)**
+
+    * compares segmentation outputs between **SynthSeg** and **expert annotations**
+    * calculates agreement metrics (Dice, IoU, Hausdorff, HD95, MI, NMI)
+
+11. **[6b-segmentation_samseg.ipynb](./6b-segmentation_samseg.ipynb)**
+    * extends the segmentation comparison to **SamSeg**
+    * evaluates segmentation accuracy relative to manual expert labels
+
+12. **[7-combine_results.ipynb](./7-combine_results.ipynb)**
+    * merges and summarises results from multiple segmentation and evaluation steps (SynthSeg + expert annotations)
+    * compiles per-structure metrics into a unified results table for further analysis
+
+13. **[7b-combine_samseg.ipynb](./7b-combine_samseg.ipynb)**
+    * combines and harmonises results from the **SamSeg** workflow
+    * supports comparison of SamSeg-derived metrics with SynthSeg and manual references
+
+14. **[7c-combine_samseg_results.ipynb](./7c-combine_samseg_results.ipynb)**
+    * final aggregation and cleanup of all **SamSeg** results
+    * prepares structured outputs for visualisation and statistical reporting
+
+15. **[7d_SynthSeg_Samseg.ipynb](./7d_SynthSeg_Samseg.ipynb)**
+    * direct comparison of **SynthSeg vs SamSeg vs expert annotations** performance
+    * computes biases, and agreement metrics between the two automated segmentation pipelines
+    * visualises structure-specific differences to assess robustness and consistency across segmentation tools
+
 
 ## Detailed features
 
