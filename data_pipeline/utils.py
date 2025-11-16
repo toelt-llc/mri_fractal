@@ -11,6 +11,20 @@ import numpy as np
 import random, math
 import sklearn.metrics as skl
 from pathlib import Path
+from matplotlib.colors import ListedColormap, BoundaryNorm
+from matplotlib.patches import Patch
+import pandas as pd
+
+# load Color map
+BOB_idx_lbl = pd.read_csv('../../Datasets/BOB/dseg.tsv', sep ='\t')
+# build the colormap
+labels     = BOB_idx_lbl['index'].values  
+color_list = BOB_idx_lbl['color'].tolist()            
+cmap       = ListedColormap(color_list)
+
+# build a norm so that each integer goes to one entry of the cmap
+bounds = np.concatenate([labels, [labels[-1] + 1]])
+norm   = BoundaryNorm(bounds, cmap.N)
 
 def visualize_nifti_depth(file_path, slices=3, save=False):
     """
@@ -308,3 +322,63 @@ def barplot_annotate_brackets(num1, num2, data, center, height, yerr=None,
         kwargs['fontsize'] = fs
 
     ax.text(*mid, text, **kwargs)
+
+
+def plot_slices(seg_img, offsets_pct = [-30,-15, 0, +15,+30]):
+    # compute midpoints
+    x_mid, y_mid, z_mid = np.array(seg_img.shape) // 2
+    Hx, Hy, Hz = seg_img.shape
+
+    # helper: compute index from percent offset (around centre), with clipping
+    def idx_from_pct(center, length, pct):
+        idx = int(round(center + (pct / 100.0) * (length / 2)))
+        return int(np.clip(idx, 0, length - 1))
+
+    # set up the figure: 3 rows (axial, coronal, sagittal)
+    fig, axes = plt.subplots(3, len(offsets_pct), figsize=(12, 8))
+
+    # plotting loop
+    for row, (orient, center, length) in enumerate([
+        ("axial",   z_mid, Hz),
+        ("coronal", y_mid, Hy),
+        ("sagittal", x_mid, Hx),
+    ]):
+        for col, pct in enumerate(offsets_pct):
+            idx = idx_from_pct(center, length, pct)
+            if orient == "axial":
+                sl = seg_img[:, :, idx]
+            elif orient == "coronal":
+                sl = seg_img[:, idx, :]
+            else:  # sagittal
+                sl = seg_img[idx, :, :]
+
+            ax = axes[row, col]
+            ax.imshow(np.rot90(sl), cmap=cmap, norm=norm)
+            ax.set_title(f"{orient.capitalize()} ({pct:+}%)", fontsize=10)
+            ax.axis("off")
+
+    # legend
+    BOB_idx_lbl['region'] = BOB_idx_lbl['name'].str.replace('^Left-', '', regex=True) \
+                            .str.replace('^Right-', '', regex=True)
+
+    sides        = BOB_idx_lbl[BOB_idx_lbl['name'].str.startswith(('Left-','Right-'))]
+    unique_sides = sides.drop_duplicates('region')
+    non_sides    = BOB_idx_lbl[~BOB_idx_lbl['name'].str.startswith(('Left-','Right-'))]
+    legend_df    = pd.concat([unique_sides, non_sides], ignore_index=True)
+
+    handles = [
+        Patch(facecolor=row['color'], edgecolor='black', label=row['region'])
+        for _, row in legend_df.iterrows()
+    ]
+
+    ncol = 4
+    fig.legend(
+        handles=handles,
+        loc='lower center',
+        ncol=ncol,
+        bbox_to_anchor=(0.5, -0.02),
+        frameon=False
+    )
+
+    plt.subplots_adjust(bottom=0.20)
+    plt.show()
